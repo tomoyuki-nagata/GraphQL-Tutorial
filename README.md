@@ -39,7 +39,120 @@ CREATE TABLE IF NOT EXISTS repositories(\
 +	created_at DATETIME NOT NULL DEFAULT (DATETIME('now','localtime')),\
 	FOREIGN KEY (owner) REFERENCES users(id)\
 );
+```
 
+issuesテーブルにauthorカラムがないため後続の6章の中でうまくいかない箇所が出てくる。下記のように修正
+```diff
+CREATE TABLE IF NOT EXISTS issues(\
+	id TEXT PRIMARY KEY NOT NULL,\
+	url TEXT NOT NULL,\
+	title TEXT NOT NULL,\
+ 	title TEXT NOT NULL,\
+ 	closed INTEGER NOT NULL DEFAULT 0,\
+ 	number INTEGER NOT NULL,\
++	author TEXT NOT NULL,\
+ 	repository TEXT NOT NULL,\
+ 	CHECK (closed IN (0, 1)),\
+-	FOREIGN KEY (repository) REFERENCES repositories(id)\
++	FOREIGN KEY (repository) REFERENCES repositories(id),\
++	FOREIGN KEY (author) REFERENCES users(id)\
+ );
+ 
+ CREATE TABLE IF NOT EXISTS projects(\
+ 	id TEXT PRIMARY KEY NOT NULL,\
+ 	title TEXT NOT NULL,\
+ 	url TEXT NOT NULL,\
++	number INTEGER NOT NULL,\
+ 	owner TEXT NOT NULL,\
+ 	FOREIGN KEY (owner) REFERENCES users(id)\
+ );
+-INSERT INTO issues(id, url, title, closed, number, repository) VALUES\
+-	('ISSUE_1', 'http://example.com/repo1/issue/1', 'First Issue', 1, 1, 'REPO_1'),\
+-	('ISSUE_2', 'http://example.com/repo1/issue/2', 'Second Issue', 0, 2, 'REPO_1'),\
+-	('ISSUE_3', 'http://example.com/repo1/issue/3', 'Third Issue', 0, 3, 'REPO_1')\
++INSERT INTO issues(id, url, title, closed, number, author, repository) VALUES\
++	('ISSUE_1', 'http://example.com/repo1/issue/1', 'First Issue', 1, 1, 'U_1', 'REPO_1'),\
++	('ISSUE_2', 'http://example.com/repo1/issue/2', 'Second Issue', 0, 2, 'U_1', 'REPO_1'),\
++	('ISSUE_3', 'http://example.com/repo1/issue/3', 'Third Issue', 0, 3, 'U_1', 'REPO_1'),\
++	('ISSUE_4', 'http://example.com/repo1/issue/4', '', 0, 4, 'U_1', 'REPO_1'),\
++	('ISSUE_5', 'http://example.com/repo1/issue/5', '', 0, 5, 'U_1', 'REPO_1'),\
++	('ISSUE_6', 'http://example.com/repo1/issue/6', '', 0, 6, 'U_1', 'REPO_1'),\
++	('ISSUE_7', 'http://example.com/repo1/issue/7', '', 0, 7, 'U_1', 'REPO_1')\
+ ;
+ 
+-INSERT INTO projects(id, title, url, owner) VALUES\
+-	('PJ_1', 'My Project', 'http://example.com/project/1', 'U_1')\
++INSERT INTO projects(id, title, url, number, owner) VALUES\
++	('PJ_1', 'My Project', 'http://example.com/project/1', 1, 'U_1'),\
++	('PJ_2', 'My Project 2', 'http://example.com/project/2', 2, 'U_1')\
+ ;
+ 
+```
+
+### 5章 リゾルバの実装 - 応用編
+#### リゾルバを分割する前の状況確認
+下記のクエリを実行すると、issuesとpullRequestsがnullのためエラーになる。
+```gql
+query {
+  repository(name: "repo1", owner: "hsaki"){
+    id
+    name
+    createdAt
+    owner {
+      name
+    }
+    issue(number:1) {
+      url
+    }
+    issues(first: 2) {
+      nodes{
+        title
+      }
+    }
+    pullRequest(number:1) {
+      baseRefName
+      closed
+      headRefName
+    }
+    pullRequests(last:2) {
+      nodes{
+        url
+        number
+      }
+    }
+  }
+}
+```
+
+一旦Repositoryのスキーマ定義にてNOT NULL制約を外しておくとテキスト通りの挙動になる
+```diff
+type Repository implements Node {
+  id: ID!
+  owner: User!
+  name: String!
+  createdAt: DateTime!
+  issue(
+    number: Int!
+  ): Issue
+  issues(
+    after: String
+    before: String
+    first: Int
+    last: Int
+-  ): IssueConnection!
++  ): IssueConnection
+  pullRequest(
+    number: Int!
+  ): PullRequest
+  pullRequests(
+    after: String
+    before: String
+    first: Int
+    last: Int
+-  ): PullRequestConnection!
++  ): PullRequestConnection
+  
+}
 ```
 
 ## 起動方法
@@ -50,3 +163,4 @@ setup.shを起動しDBを作成する
 
 ※ デフォルトではShebang(1行目の#!)にzshを指定しているため、必要に応じてを変更すること
 ※ Macではデフォルトでsqlite3が導入されている。WindowsやLinuxは必要に応じてインストールすること
+
