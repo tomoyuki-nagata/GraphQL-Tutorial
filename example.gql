@@ -1,0 +1,9 @@
+query {
+  user(name: "hsaki") {
+    id
+    name
+    projectV2(number: 1) {
+      title
+    }
+  }
+}
