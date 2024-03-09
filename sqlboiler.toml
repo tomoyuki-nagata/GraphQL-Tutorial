@@ -1,0 +1,19 @@
+# 自動生成されるGoコードのパッケージ名
+pkgname="db"
+
+# 自動生成されるコードの配置ディレクトリ(相対パス)
+output="graph/db"
+
+# sqlboilerコマンドを実行するたびに、前回生成したコードを削除してから生成させる
+wipe=true
+
+# boil.SetDB(db)でセットしたグローバルDB構造体を使用する形のORM関数を生成させるか
+add-global-variants=false
+
+# テストコードを生成させない
+no-tests=true
+
+
+[sqlite3]
+  # SQLite3のDBファイルの場所
+  dbname = "./mygraphql.db"
