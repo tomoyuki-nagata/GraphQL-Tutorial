@@ -6,9 +6,11 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"graphql-tutorial/graph/model"
 	"graphql-tutorial/internal"
+	"strings"
 )
 
 // Author is the resolver for the author field.
@@ -39,7 +41,23 @@ func (r *queryResolver) User(ctx context.Context, name string) (*model.User, err
 
 // Node is the resolver for the node field.
 func (r *queryResolver) Node(ctx context.Context, id string) (model.Node, error) {
-	panic(fmt.Errorf("not implemented: Node - node"))
+	nElems := strings.SplitN(id, "_", 2)
+	nType, _ := nElems[0], nElems[1]
+
+	switch nType {
+	case "U":
+		return r.Srv.GetUserByID(ctx, id)
+	case "REPO":
+		return r.Srv.GetRepoByID(ctx, id)
+	case "ISSUE":
+		return r.Srv.GetIssueByID(ctx, id)
+	// case "PJ":
+	// return r.Srv.GetProjectByID(ctx, id)
+	// case "PR":
+	// return r.Srv.GetPullRequestByID(ctx, id)
+	default:
+		return nil, errors.New("invalid ID")
+	}
 }
 
 // Owner is the resolver for the owner field.
