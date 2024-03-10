@@ -12,6 +12,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -32,6 +33,9 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	// SQLBoilerによって発行されるSQLクエリをログ出力させるデバッグオプション
+	boil.DebugMode = true
 
 	service := services.New(db)
 

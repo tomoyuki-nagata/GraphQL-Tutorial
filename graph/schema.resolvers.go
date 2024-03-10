@@ -11,6 +11,11 @@ import (
 	"graphql-tutorial/internal"
 )
 
+// Author is the resolver for the author field.
+func (r *issueResolver) Author(ctx context.Context, obj *model.Issue) (*model.User, error) {
+	return r.Srv.GetUserByID(ctx, obj.Author.ID)
+}
+
 // AddProjectV2ItemByID is the resolver for the addProjectV2ItemById field.
 func (r *mutationResolver) AddProjectV2ItemByID(ctx context.Context, input model.AddProjectV2ItemByIDInput) (*model.AddProjectV2ItemByIDPayload, error) {
 	panic(fmt.Errorf("not implemented: AddProjectV2ItemByID - addProjectV2ItemById"))
@@ -46,12 +51,11 @@ func (r *repositoryResolver) Owner(ctx context.Context, obj *model.Repository) (
 func (r *repositoryResolver) Issue(ctx context.Context, obj *model.Repository, number int) (*model.Issue, error) {
 	// とあるレポジトリに属する、とある番号のIssue情報を取得
 	return r.Srv.GetIssueByRepoAndNumber(ctx, obj.ID, number)
-
 }
 
 // Issues is the resolver for the issues field.
 func (r *repositoryResolver) Issues(ctx context.Context, obj *model.Repository, after *string, before *string, first *int, last *int) (*model.IssueConnection, error) {
-	panic(fmt.Errorf("not implemented: Issues - issues"))
+	return r.Srv.ListIssueInRepository(ctx, obj.ID, after, before, first, last)
 }
 
 // PullRequest is the resolver for the pullRequest field.
@@ -64,6 +68,9 @@ func (r *repositoryResolver) PullRequests(ctx context.Context, obj *model.Reposi
 	panic(fmt.Errorf("not implemented: PullRequests - pullRequests"))
 }
 
+// Issue returns internal.IssueResolver implementation.
+func (r *Resolver) Issue() internal.IssueResolver { return &issueResolver{r} }
+
 // Mutation returns internal.MutationResolver implementation.
 func (r *Resolver) Mutation() internal.MutationResolver { return &mutationResolver{r} }
 
@@ -73,6 +80,7 @@ func (r *Resolver) Query() internal.QueryResolver { return &queryResolver{r} }
 // Repository returns internal.RepositoryResolver implementation.
 func (r *Resolver) Repository() internal.RepositoryResolver { return &repositoryResolver{r} }
 
+type issueResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type repositoryResolver struct{ *Resolver }
