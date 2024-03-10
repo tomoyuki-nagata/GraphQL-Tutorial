@@ -15,7 +15,14 @@ import (
 
 // Author is the resolver for the author field.
 func (r *issueResolver) Author(ctx context.Context, obj *model.Issue) (*model.User, error) {
-	return r.Srv.GetUserByID(ctx, obj.Author.ID)
+	// 1. Loaderに検索条件となるIDを登録(この時点では即時実行されない)
+	thunk := r.Loaders.UserLoader.Load(ctx, obj.Author.ID)
+	// 2. LoaderがDBに対してデータ取得処理を実行するまで待って、結果を受け取る
+	user, err := thunk()
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 // AddProjectV2ItemByID is the resolver for the addProjectV2ItemById field.

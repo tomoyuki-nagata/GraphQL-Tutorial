@@ -8,4 +8,5 @@ import "graphql-tutorial/graph/services"
 
 type Resolver struct {
 	Srv services.Services
+	*Loaders
 }

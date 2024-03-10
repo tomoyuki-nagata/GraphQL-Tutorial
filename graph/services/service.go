@@ -16,6 +16,7 @@ type Services interface {
 type UserService interface {
 	GetUserByID(ctx context.Context, id string) (*model.User, error)
 	GetUserByName(ctx context.Context, name string) (*model.User, error)
+	ListUsersByID(ctx context.Context, IDs []string) ([]*model.User, error)
 }
 
 type RepoService interface {
