@@ -28,7 +28,7 @@ type Repository implements Node {
     before: String
     first: Int
     last: Int
-  ): IssueConnection!
+  ): IssueConnection
   pullRequest(
     number: Int!
   ): PullRequest
@@ -37,7 +37,7 @@ type Repository implements Node {
     before: String
     first: Int
     last: Int
-  ): PullRequestConnection!
+  ): PullRequestConnection
 }
 
 type User implements Node {

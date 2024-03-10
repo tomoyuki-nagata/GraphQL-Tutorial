@@ -9,20 +9,33 @@ import (
 
 type Services interface {
 	UserService
-	// issueテーブルを扱うIssueServiceなど、他のサービスインターフェースができたらそれらを追加していく
+	RepoService
+	IssueService
 }
 
 type UserService interface {
+	GetUserByID(ctx context.Context, id string) (*model.User, error)
 	GetUserByName(ctx context.Context, name string) (*model.User, error)
+}
+
+type RepoService interface {
+	GetRepoByFullName(ctx context.Context, owner, name string) (*model.Repository, error)
+}
+
+type IssueService interface {
+	GetIssueByRepoAndNumber(ctx context.Context, repoID string, number int) (*model.Issue, error)
 }
 
 type services struct {
 	*userService
-	// issueテーブルを扱うissueServiceなど、他のサービス構造体ができたらフィールドを追加していく
+	*repoService
+	*issueService
 }
 
 func New(exec boil.ContextExecutor) Services {
 	return &services{
-		userService: &userService{exec: exec},
+		userService:  &userService{exec: exec},
+		repoService:  &repoService{exec: exec},
+		issueService: &issueService{exec: exec},
 	}
 }

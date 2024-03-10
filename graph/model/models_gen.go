@@ -145,9 +145,9 @@ type Repository struct {
 	Name         string                 `json:"name"`
 	CreatedAt    time.Time              `json:"createdAt"`
 	Issue        *Issue                 `json:"issue,omitempty"`
-	Issues       *IssueConnection       `json:"issues"`
+	Issues       *IssueConnection       `json:"issues,omitempty"`
 	PullRequest  *PullRequest           `json:"pullRequest,omitempty"`
-	PullRequests *PullRequestConnection `json:"pullRequests"`
+	PullRequests *PullRequestConnection `json:"pullRequests,omitempty"`
 }
 
 func (Repository) IsNode()            {}
