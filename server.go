@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
@@ -39,10 +40,14 @@ func main() {
 
 	service := services.New(db)
 
-	srv := handler.NewDefaultServer(internal.NewExecutableSchema(internal.Config{Resolvers: &graph.Resolver{
-		Srv:     service,
-		Loaders: graph.NewLoaders(service),
-	}}))
+	srv := handler.NewDefaultServer(internal.NewExecutableSchema(internal.Config{
+		Resolvers: &graph.Resolver{
+			Srv:     service,
+			Loaders: graph.NewLoaders(service),
+		},
+		Complexity: graph.ComplexityConfig(),
+	}))
+	srv.Use(extension.FixedComplexityLimit(30))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
