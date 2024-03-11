@@ -1,7 +1,39 @@
 # GraphQL-Tutorial
 [Goで学ぶGraphQLサーバーサイド入門](https://zenn.dev/hsaki/books/golang-graphql)の内容に従う
 
-## 変更事項
+## 起動方法
+1. setup.shを起動しDBを作成する
+```sh
+./setup.sh
+```
+※ デフォルトではShebang(1行目の#!)にzshを指定しているため、必要に応じてを変更すること
+※ Macではデフォルトでsqlite3が導入されている。WindowsやLinuxは必要に応じてインストールすること
+
+2. サーバーを起動する
+```sh
+go run ./server.go
+```
+
+3. `http://localhost:8080`にアクセスし、下記のクエリを投げてみる
+```gql
+query {
+  node(id: "REPO_1") {
+    ... on Repository {
+      name
+      issues(first: 2) {
+        nodes {
+          number
+          author {
+            name
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+## チュートリアル変更事項
 
 ### 3章 自作のスキーマを使ってGraphQLサーバーを作ろう
 #### 今回のお題 - 簡略版GitHub API v4
@@ -155,12 +187,23 @@ type Repository implements Node {
 }
 ```
 
-## 起動方法
-setup.shを起動しDBを作成する
-```sh
-./setup.sh
-```
+### 10章 ディレクティブを利用した認証機構の追加
+#### ディレクティブを利用したGraphQL層での認証機構の追加
+3章で変更した認証ディレクティブを再度設定する
+```diff
+type Query {
+  repository(
+    name: String!
+    owner: String!
+  ): Repository
 
-※ デフォルトではShebang(1行目の#!)にzshを指定しているため、必要に応じてを変更すること
-※ Macではデフォルトでsqlite3が導入されている。WindowsやLinuxは必要に応じてインストールすること
+  user(
+    name: String!
+- ): User
++ ): User @isAuthenticated 
+  node(
+    id: ID!
+  ): Node
+}
+```
 
