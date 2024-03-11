@@ -3,42 +3,47 @@
 
 ## 起動方法
 1. setup.shを起動しDBを作成する
-```sh
-./setup.sh
-```
+  ```sh
+  ./setup.sh
+  ```
+
 ※ デフォルトではShebang(1行目の#!)にzshを指定しているため、必要に応じてを変更すること
+
 ※ Macではデフォルトでsqlite3が導入されている。WindowsやLinuxは必要に応じてインストールすること
 
 2. サーバーを起動する
-```sh
-go run ./server.go
-```
+  ```sh
+  go run ./server.go
+  ```
 
 3. `http://localhost:8080`にアクセスし、下記のクエリを投げてみる
-```gql
-query {
-  node(id: "REPO_1") {
-    ... on Repository {
-      name
-      issues(first: 2) {
-        nodes {
-          number
-          author {
-            name
+  ```gql
+  query {
+    node(id: "REPO_1") {
+      ... on Repository {
+        name
+        issues(first: 2) {
+          nodes {
+            number
+            author {
+              name
+            }
           }
         }
       }
     }
   }
-}
-```
+  ```
 
 ## チュートリアル変更事項
 
 ### 3章 自作のスキーマを使ってGraphQLサーバーを作ろう
+
 #### 今回のお題 - 簡略版GitHub API v4
+
 最初に作成する段階では、ユーザー取得の時に認証のディレクティブがついているため、4章の実装後の動作確認で`directive isAuthenticated is not implemented`というエラーが発生する。
-そのためこの段階ではディレクティブのアノテーションをつけないようにする
+
+そのためこの段階ではディレクティブのアノテーションをつけないようにする。
 ```diff
 type Query {
   repository(
@@ -57,10 +62,11 @@ type Query {
 ```
 
 ### 4章 リゾルバの実装 - 基本編 
+
 #### データを格納するDBの準備
 setup.shにてcreated_atの型はDATETIMEにしないとsqlboilerの自動生成コードがエラーになる。
+
 https://github.com/saki-engineering/graphql-sample/issues/1#issue-1725020469
-https://stackoverflow.com/questions/77796849/go-error-time-time-does-not-implement-driver-valuer-missing-method-value
 
 ```diff
 CREATE TABLE IF NOT EXISTS repositories(\
@@ -73,7 +79,7 @@ CREATE TABLE IF NOT EXISTS repositories(\
 );
 ```
 
-issuesテーブルにauthorカラムがないため後続の6章の中でうまくいかない箇所が出てくる。下記のように修正
+issuesテーブルにauthorカラムがないため後続の6章の中でうまくいかない箇所が出てくるため下記のように修正する。
 ```diff
 CREATE TABLE IF NOT EXISTS issues(\
 	id TEXT PRIMARY KEY NOT NULL,\
@@ -122,7 +128,9 @@ CREATE TABLE IF NOT EXISTS issues(\
 ```
 
 ### 5章 リゾルバの実装 - 応用編
+
 #### リゾルバを分割する前の状況確認
+
 下記のクエリを実行すると、issuesとpullRequestsがnullのためエラーになる。
 ```gql
 query {
@@ -188,7 +196,9 @@ type Repository implements Node {
 ```
 
 ### 10章 ディレクティブを利用した認証機構の追加
+
 #### ディレクティブを利用したGraphQL層での認証機構の追加
+
 3章で変更した認証ディレクティブを再度設定する
 ```diff
 type Query {
