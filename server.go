@@ -8,6 +8,7 @@ import (
 	"graphql-tutorial/graph"
 	"graphql-tutorial/graph/services"
 	"graphql-tutorial/internal"
+	"graphql-tutorial/middlewares/auth"
 	"log"
 	"net/http"
 	"os"
@@ -47,6 +48,7 @@ func main() {
 			Srv:     service,
 			Loaders: graph.NewLoaders(service),
 		},
+		Directives: graph.Directive,
 		Complexity: graph.ComplexityConfig(),
 	}))
 	srv.Use(extension.FixedComplexityLimit(30))
@@ -88,7 +90,7 @@ func main() {
 	})
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	http.Handle("/query", auth.AuthMiddleware(srv))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

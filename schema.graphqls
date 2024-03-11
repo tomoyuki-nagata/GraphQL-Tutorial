@@ -164,7 +164,7 @@ type Query {
 
   user(
     name: String!
-  ): User 
+  ): User @isAuthenticated
 
   node(
     id: ID!
